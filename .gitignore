@@ -1,0 +1,26 @@
+# Environnements virtuels
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+
+# Données brutes (trop lourdes)
+data/raw/
+data/train_test/
+
+# Modèles sauvegardés
+models/*.pkl
+models/*.joblib
+
+# Claude
+.claude/
+
+# Divers
+test_output.txt
+*.log
+.DS_Store

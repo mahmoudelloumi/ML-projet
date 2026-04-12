@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Résultats — Retail ML</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Résultats de Prédiction</h1>
+    <p>Fichier analysé : <strong>{{ filename }}</strong></p>
+  </header>
+
+  <main>
+
+    <!-- ── KPI Cards ── -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-value">{{ stats.total }}</span>
+        <span class="stat-label">Clients analysés</span>
+      </div>
+      <div class="stat-card danger">
+        <span class="stat-value">{{ stats.churners }}</span>
+        <span class="stat-label">Churners détectés</span>
+      </div>
+      <div class="stat-card success">
+        <span class="stat-value">{{ stats.fideles }}</span>
+        <span class="stat-label">Clients fidèles</span>
+      </div>
+      <div class="stat-card warning">
+        <span class="stat-value">{{ stats.churn_rate }} %</span>
+        <span class="stat-label">Taux de churn prédit</span>
+      </div>
+      <div class="stat-card info">
+        <span class="stat-value">{{ stats.avg_risk }} %</span>
+        <span class="stat-label">Risque moyen</span>
+      </div>
+    </section>
+
+    <!-- ── Graphiques ── -->
+    <section class="charts-grid">
+
+      <!-- Donut : Fidèles vs Churners -->
+      <div class="card chart-card">
+        <h2>Répartition Fidèles / Churners</h2>
+        <div class="chart-wrap">
+          <canvas id="donutChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Pie : Niveaux de risque -->
+      <div class="card chart-card">
+        <h2>Distribution des niveaux de risque</h2>
+        <div class="chart-wrap">
+          <canvas id="riskChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Bar : Histogramme probabilités -->
+      <div class="card chart-card chart-wide">
+        <h2>Histogramme des probabilités de départ</h2>
+        <div class="chart-wrap">
+          <canvas id="histChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Bar horizontale : Top 10 clients à risque -->
+      <div class="card chart-card chart-wide">
+        <h2>Top 10 clients à risque de départ</h2>
+        <div class="chart-wrap">
+          <canvas id="top10Chart"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── Tableau détaillé ── -->
+    <section class="card">
+      <h2>Détail par client <span class="badge badge-info">Triés par risque décroissant</span></h2>
+      {% if rows|length == 100 %}
+        <p class="notice">Affichage limité aux 100 premiers résultats.</p>
+      {% endif %}
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Client ID</th>
+              <th>Prédiction</th>
+              <th>Probabilité de départ</th>
+              <th>Niveau de risque</th>
+              {% if rows[0].actual is not none %}
+              <th>Statut réel</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+            <tr>
+              <td><strong>{{ row.customer_id }}</strong></td>
+              <td>
+                <span class="badge badge-{{ row.risk_class }}">
+                  {{ row.prediction }}
+                </span>
+              </td>
+              <td>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar bg-{{ row.risk_class }}"
+                       style="width: {{ row.probability }}%"></div>
+                </div>
+                <span class="prob-label">{{ row.probability }} %</span>
+              </td>
+              <td>
+                {% if row.probability >= 75 %}
+                  <span class="badge badge-danger">Critique</span>
+                {% elif row.probability >= 50 %}
+                  <span class="badge badge-warning">Élevé</span>
+                {% elif row.probability >= 25 %}
+                  <span class="badge badge-info">Modéré</span>
+                {% else %}
+                  <span class="badge badge-success">Faible</span>
+                {% endif %}
+              </td>
+              {% if row.actual is not none %}
+              <td>
+                <span class="badge badge-{{ 'danger' if row.actual == 1 else 'success' }}">
+                  {{ 'Churner' if row.actual == 1 else 'Fidèle' }}
+                </span>
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <a href="/" class="btn-primary">Nouvelle analyse</a>
+
+  </main>
+
+  <!-- ── Chart.js scripts ── -->
+  <script>
+    const COLORS = {
+      danger:  '#e74c3c',
+      warning: '#f39c12',
+      success: '#27ae60',
+      info:    '#2980b9',
+      blue:    '#3498db',
+    };
+
+    // 1. Donut — Fidèles vs Churners
+    new Chart(document.getElementById('donutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Fidèles', 'Churners'],
+        datasets: [{
+          data: [{{ stats.fideles }}, {{ stats.churners }}],
+          backgroundColor: [COLORS.success, COLORS.danger],
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label} : ${ctx.raw} (${(ctx.raw/{{ stats.total }}*100).toFixed(1)}%)`
+            }
+          }
+        },
+        cutout: '60%',
+      }
+    });
+
+    // 2. Pie — Niveaux de risque
+    new Chart(document.getElementById('riskChart'), {
+      type: 'pie',
+      data: {
+        labels: {{ charts.risk_labels | tojson }},
+        datasets: [{
+          data: {{ charts.risk_values | tojson }},
+          backgroundColor: [COLORS.danger, COLORS.warning, COLORS.info, COLORS.success],
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    // 3. Bar — Histogramme des probabilités
+    new Chart(document.getElementById('histChart'), {
+      type: 'bar',
+      data: {
+        labels: {{ charts.hist_labels | tojson }},
+        datasets: [{
+          label: 'Nombre de clients',
+          data: {{ charts.hist_values | tojson }},
+          backgroundColor: {{ charts.hist_labels | tojson }}.map((_, i) =>
+            i >= 7 ? COLORS.danger : i >= 5 ? COLORS.warning : i >= 2 ? COLORS.info : COLORS.success
+          ),
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: 'Probabilité de départ' }},
+          y: { title: { display: true, text: 'Nombre de clients' }, beginAtZero: true }
+        }
+      }
+    });
+
+    // 4. Bar horizontale — Top 10 clients
+    new Chart(document.getElementById('top10Chart'), {
+      type: 'bar',
+      data: {
+        labels: {{ charts.top10_ids | tojson }},
+        datasets: [{
+          label: 'Probabilité de départ (%)',
+          data: {{ charts.top10_probs | tojson }},
+          backgroundColor: {{ charts.top10_probs | tojson }}.map(p =>
+            p >= 75 ? COLORS.danger : p >= 50 ? COLORS.warning : COLORS.info
+          ),
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            min: 0, max: 100,
+            title: { display: true, text: 'Probabilité de départ (%)' }
+          },
+          y: { title: { display: true, text: 'Client ID' }}
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

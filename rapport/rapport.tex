@@ -1,0 +1,588 @@
+%% ============================================================
+%%  Rapport ML - Analyse Comportementale Clientèle Retail
+%%  École Nationale d'Ingénieurs de Sfax — GI2 — 2025-2026
+%% ============================================================
+\documentclass[12pt, a4paper]{article}
+
+%% ── Encodage & Langue ──────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+%% ── Mise en page ───────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{microtype}
+\usepackage{parskip}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+%% ── Couleurs ───────────────────────────────────────────────
+\usepackage{xcolor}
+\definecolor{primary}{RGB}{44, 62, 80}      % bleu foncé
+\definecolor{accent}{RGB}{52, 152, 219}     % bleu clair
+\definecolor{success}{RGB}{39, 174, 96}     % vert
+\definecolor{danger}{RGB}{231, 76, 60}      % rouge
+\definecolor{lightgray}{RGB}{245, 245, 245}
+\definecolor{codebg}{RGB}{248, 248, 248}
+
+%% ── Graphiques & Figures ───────────────────────────────────
+\usepackage{graphicx}
+\usepackage{svg}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\captionsetup{font=small, labelfont=bf, labelsep=period}
+
+%% ── Tableaux ───────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{colortbl}
+
+%% ── Mise en forme des sections ─────────────────────────────
+\usepackage{titlesec}
+\titleformat{\section}
+  {\large\bfseries\color{primary}}
+  {\thesection}{1em}{}
+  [\color{accent}\titlerule]
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{primary}}
+  {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalsize\itshape\color{primary}}
+  {\thesubsubsection}{1em}{}
+
+%% ── En-têtes & Pieds de page ───────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{primary}\textit{Analyse Comportementale Clientèle}}
+\fancyhead[R]{\small\color{primary}\textit{Atelier Machine Learning}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{accent}\leaders\hrule height \headrulewidth\hfill}}
+
+%% ── Boîtes colorées ────────────────────────────────────────
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+\newtcolorbox{infobox}[1][]{
+  colback=accent!8, colframe=accent, coltitle=white,
+  fonttitle=\bfseries\small, title=#1,
+  arc=4pt, boxrule=0.8pt, left=8pt, right=8pt,
+  top=6pt, bottom=6pt
+}
+
+\newtcolorbox{codebox}{
+  colback=codebg, colframe=primary!30,
+  arc=3pt, boxrule=0.5pt, left=8pt, right=8pt,
+  top=4pt, bottom=4pt, breakable
+}
+
+%% ── Code ───────────────────────────────────────────────────
+\usepackage{listings}
+\lstset{
+  backgroundcolor=\color{codebg},
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\color{accent}\bfseries,
+  commentstyle=\color{success}\itshape,
+  stringstyle=\color{danger},
+  breaklines=true,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{primary!30},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=8pt,
+  showstringspaces=false,
+  tabsize=4,
+  language=Python
+}
+
+%% ── Listes ─────────────────────────────────────────────────
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=1.5em, itemsep=2pt}
+\setlist[enumerate]{leftmargin=1.5em, itemsep=2pt}
+
+%% ── Liens ──────────────────────────────────────────────────
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true, linkcolor=primary,
+  urlcolor=accent, citecolor=accent,
+  pdftitle={Rapport ML - Analyse Comportementale Clientèle Retail},
+  pdfauthor={Mahmoud Elloumi}
+}
+
+%% ── Commandes utiles ───────────────────────────────────────
+\newcommand{\code}[1]{\texttt{\small#1}}
+\newcommand{\feat}[1]{\textit{\textcolor{accent}{#1}}}
+
+%% ============================================================
+%%  DOCUMENT
+%% ============================================================
+\begin{document}
+
+%% ── Page de garde ──────────────────────────────────────────
+\thispagestyle{empty}
+\begin{titlepage}
+
+  % En-tête institutionnel
+  \begin{minipage}[c]{0.30\textwidth}
+    \centering\small
+    République Tunisienne\\
+    Ministère de l'Enseignement Supérieur,\\
+    et de la Recherche Scientifique\\
+    \textbf{Université de Sfax}\\
+    École Nationale d'Ingénieurs de Sfax
+  \end{minipage}
+  \hfill
+  \begin{minipage}[c]{0.30\textwidth}
+    \centering
+    \includesvg[width=0.55\textwidth]{Logo_ENIS.svg}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[c]{0.30\textwidth}
+    \centering\small
+    Cycle de Formation d'Ingénieurs\\
+    dans la Discipline\\
+    \textbf{Génie Informatique}
+  \end{minipage}
+
+  \vspace{4cm}
+  \begin{center}
+    {\Huge\bfseries\color{primary} COMPTE RENDU}\\[1.2cm]
+    {\Huge\bfseries\color{primary} Atelier Machine Learning}\\[6pt]
+    {\large\itshape\color{primary!70} Analyse Comportementale Clientèle Retail}\\[3cm]
+    {\LARGE E-commerce de Cadeaux}\\[3cm]
+    {\large\bfseries Préparé par \textsc{Mahmoud Elloumi}}\\[1.5cm]
+
+    \rule{8cm}{0.6pt}\\[1cm]
+    {\small\itshape Document pédagogique — Chaîne complète de traitement}\\[0.3cm]
+    {\small Exploration $\rightarrow$ Préparation $\rightarrow$ Modélisation
+            $\rightarrow$ Évaluation $\rightarrow$ \textbf{Déploiement}}\\[1.5cm]
+    {\large\bfseries Année Universitaire : 2025-2026}
+  \end{center}
+
+\end{titlepage}
+
+%% ── Table des matières ─────────────────────────────────────
+\newpage
+\tableofcontents
+\newpage
+
+%% ============================================================
+\section{Introduction et Contexte}
+%% ============================================================
+
+Ce rapport s'inscrit dans le cadre du module de Machine Learning (GI2) de l'année
+universitaire 2025-2026. Il détaille la conception et la mise en œuvre d'une chaîne
+complète de traitement de données, de l'exploration initiale jusqu'au déploiement
+d'une solution prédictive.
+
+\subsection{Contexte de l'étude}
+
+Nous intervenons en tant que Data Scientist pour une entreprise spécialisée dans le
+\textbf{e-commerce de cadeaux}. Dans un secteur très concurrentiel, cette entreprise
+souhaite tirer parti de ses données pour affiner sa connaissance de sa clientèle et
+améliorer ses prises de décision.
+
+\subsection{Objectifs métiers}
+
+La mission principale est d'exploiter les données transactionnelles pour répondre
+à trois enjeux stratégiques~:
+
+\begin{itemize}
+  \item \textbf{Personnalisation marketing :} Mieux comprendre les segments
+        de clients afin de personnaliser efficacement les stratégies marketing.
+  \item \textbf{Fidélisation (Anticipation du Churn) :} Identifier les signaux
+        faibles permettant de réduire le taux de départ des clients (\textit{churn}).
+  \item \textbf{Croissance :} Optimiser globalement le chiffre d'affaires.
+\end{itemize}
+
+\subsection{Présentation du jeu de données}
+
+Nous nous appuyons sur la base \code{retail\_customers\_COMPLETE\_CATEGORICAL.csv},
+qui regroupe \textbf{52 variables} issues de transactions réelles enrichies par des
+données complémentaires. Cette base a été intentionnellement conçue pour être imparfaite
+afin de simuler un vrai projet de Data Science.
+
+%% ============================================================
+\section{Configuration de l'environnement de travail}
+%% ============================================================
+
+\subsection{Arborescence et structure du projet}
+
+Le projet respecte une architecture modulaire~:
+
+\begin{codebox}
+\begin{verbatim}
+ML-Projet/
+├── data/
+│   ├── raw/          # Données brutes originales
+│   ├── processed/    # Données nettoyées
+│   └── train_test/   # Train / Test splittés
+├── notebooks/        # Exploration Jupyter
+├── src/
+│   ├── preprocessing.py
+│   ├── train_model.py
+│   ├── predict.py
+│   └── utils.py
+├── models/           # Modèles sauvegardés (.pkl)
+├── app/              # Application Flask
+│   ├── app.py
+│   ├── templates/
+│   └── static/
+├── reports/          # Visualisations & rapports
+├── requirements.txt
+└── README.md
+\end{verbatim}
+\end{codebox}
+
+\subsection{Gestion de l'environnement virtuel}
+
+Un environnement virtuel a été créé via~:
+
+\begin{lstlisting}[language=bash]
+python -m venv venv
+venv\Scripts\Activate.ps1      # Windows PowerShell
+pip install -r requirements.txt
+\end{lstlisting}
+
+Les dépendances sont figées dans \code{requirements.txt} (\code{pip freeze > requirements.txt})
+pour assurer la reproductibilité.
+
+%% ============================================================
+\section{Analyse et Synthèse des Données}
+%% ============================================================
+
+\subsection{Exploration des features}
+
+Le dataset contient \textbf{52 features} réparties en deux grandes familles~:
+
+\begin{itemize}
+  \item \textbf{Features numériques (1–34)~:} métriques RFM (\feat{Recency},
+        \feat{Frequency}, \feat{MonetaryTotal}), comportement transactionnel
+        (\feat{ReturnRatio}, \feat{CancelledTransactions}), profil client
+        (\feat{Age}, \feat{SatisfactionScore}, \feat{SupportTicketsCount}).
+  \item \textbf{Features catégorielles (35–52)~:} segments
+        (\feat{RFMSegment}, \feat{SpendingCategory}, \feat{CustomerType}),
+        temporelles et géographiques (\feat{FavoriteSeason}, \feat{Region},
+        \feat{Country}), démographiques (\feat{AgeCategory}, \feat{Gender}).
+\end{itemize}
+
+\subsection{Identification des problèmes de qualité}
+
+\begin{table}[H]
+\centering
+\caption{Problèmes de qualité identifiés dans le dataset}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{l l X l}
+\toprule
+\rowcolor{primary!90}
+\color{white}\textbf{Type} &
+\color{white}\textbf{Feature(s)} &
+\color{white}\textbf{Description} &
+\color{white}\textbf{Traitement} \\
+\midrule
+Valeurs manquantes  & \code{Age}                  & $\approx30\%$ de NaN               & Imputation médiane \\
+\rowcolor{lightgray}
+Valeurs aberrantes  & \code{SupportTicketsCount}  & Codes $-1$ et $999$                & Remplacement NaN \\
+Valeurs aberrantes  & \code{SatisfactionScore}    & Codes $-1$, $0$ et $99$            & Remplacement NaN \\
+\rowcolor{lightgray}
+Formats inconsistants & \code{RegistrationDate}   & Formats UK et ISO mélangés         & Parsing dayfirst \\
+Feature inutile     & \code{NewsletterSubscribed} & Constante ($100\%$ \textit{"Yes"}) & Suppression \\
+\rowcolor{lightgray}
+Données brutes      & \code{LastLoginIP}          & Identifiant unique                  & Suppression \\
+Fuite de données    & \code{ChurnRiskCategory}    & Dérivé de Churn                    & Suppression \\
+\rowcolor{lightgray}
+Fuite de données    & \code{RFMSegment}           & Dérivé des features RFM            & Suppression \\
+Déséquilibre classes & \code{Churn}               & $\approx33\%$ churners             & SMOTE \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+%% ============================================================
+\section{Nettoyage et Ingénierie des Données}
+%% ============================================================
+
+\subsection{Traitement des valeurs aberrantes}
+
+La fonction \code{handle\_aberrant\_values()} dans \code{utils.py} corrige~:
+
+\begin{itemize}
+  \item \feat{SupportTicketsCount}~: valeurs $-1$ et $999$ $\rightarrow$ \code{NaN}
+        (130 occurrences corrigées)
+  \item \feat{SatisfactionScore}~: valeurs $-1$, $0$ et $99$ $\rightarrow$ \code{NaN}
+        (349 occurrences corrigées)
+  \item \feat{MonetaryTotal}~: clip à $0$ pour éviter les montants négatifs extrêmes
+\end{itemize}
+
+\subsection{Feature Engineering}
+
+De nouvelles variables ont été créées pour enrichir le pouvoir prédictif~:
+
+\begin{lstlisting}[language=Python]
+# Ratio monetaire / recence
+df["MonetaryPerDay"] = df["MonetaryTotal"] / (df["Recency"] + 1)
+
+# Panier moyen
+df["AvgBasketValue"] = df["MonetaryTotal"] / (df["Frequency"] + 1)
+
+# Ratio anciennete
+df["TenureRatio"] = df["Recency"] / (df["CustomerTenureDays"] + 1)
+
+# Frequence par jour
+df["FrequencyPerDay"] = df["Frequency"] / (df["CustomerTenureDays"] + 1)
+
+# Interaction RFM
+df["Recency_x_Frequency"] = df["Recency"] * df["Frequency"]
+
+# Log-transformations (distributions asymetriques)
+df["LogMonetaryTotal"] = np.log1p(df["MonetaryTotal"].clip(lower=0))
+df["LogFrequency"]     = np.log1p(df["Frequency"])
+\end{lstlisting}
+
+\subsection{Traitement des dates}
+
+La variable \feat{RegistrationDate} présentait des formats hétérogènes
+(UK~: \code{"12/03/10"}, ISO~: \code{"2010-03-12"}). Elle a été parsée avec
+\code{dayfirst=True} puis décomposée en~: \feat{RegYear}, \feat{RegMonth},
+\feat{RegDay}, \feat{RegDayOfWeek}, \feat{IsWeekendReg}.
+
+%% ============================================================
+\section{Transformation et Préparation à l'Apprentissage}
+%% ============================================================
+
+\subsection{Encodage des variables catégorielles}
+
+Le pipeline de prétraitement distingue deux types de variables catégorielles~:
+
+\begin{itemize}
+  \item \textbf{Encodage Ordinal} (\code{OrdinalEncoder}) pour les variables
+        à ordre naturel~:
+        \begin{itemize}
+          \item \feat{SpendingCategory}~: Low $<$ Medium $<$ High $<$ VIP
+          \item \feat{LoyaltyLevel}~: Nouveau $<$ Jeune $<$ Établi $<$ Ancien
+          \item \feat{AgeCategory}~: 18--24 $<$ 25--34 $<$ \ldots $<$ 65+
+          \item \feat{BasketSizeCategory}~: Petit $<$ Moyen $<$ Grand
+          \item \feat{PreferredTimeOfDay}~: Nuit $<$ Matin $<$ Midi $<$ Après-midi $<$ Soir
+        \end{itemize}
+  \item \textbf{One-Hot Encoding} (\code{OneHotEncoder}) pour les variables
+        nominales sans ordre~: \feat{CustomerType}, \feat{FavoriteSeason},
+        \feat{Region}, \feat{Gender}, \feat{AccountStatus}, \feat{Country}, etc.
+\end{itemize}
+
+\subsection{Séparation Train/Test et mise à l'échelle}
+
+\begin{lstlisting}[language=Python]
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+# Fit UNIQUEMENT sur X_train -> eviter le Data Leakage
+preprocessor.fit_transform(X_train)
+preprocessor.transform(X_test)
+\end{lstlisting}
+
+Après prétraitement~: $X_{train}$ de dimension $(3\,497 \times 115)$ et
+$X_{test}$ de dimension $(875 \times 115)$.
+
+%% ============================================================
+\section{Modélisation Avancée et Évaluation}
+%% ============================================================
+
+\subsection{Algorithmes et stratégie}
+
+Quatre algorithmes ont été comparés pour ce problème de classification binaire~:
+
+\begin{itemize}
+  \item \textbf{Régression Logistique} — baseline linéaire interprétable
+  \item \textbf{Random Forest} — ensemble basé sur le bagging
+  \item \textbf{Gradient Boosting} — ensemble basé sur le boosting séquentiel
+  \item \textbf{SVM (SVC)} — maximisation de la marge entre classes
+\end{itemize}
+
+Avant l'entraînement, la technique \textbf{SMOTE} a été appliquée sur le jeu
+d'entraînement pour corriger le déséquilibre des classes~:
+
+\begin{center}
+\textit{Avant SMOTE}~: \{0~: 2\,334, 1~: 1\,163\}
+\hspace{1cm}
+\textit{Après SMOTE}~: \{0~: 2\,334, 1~: 2\,334\}
+\end{center}
+
+\subsection{Optimisation des hyperparamètres (GridSearchCV)}
+
+Une recherche exhaustive a été effectuée pour chaque algorithme via
+\code{GridSearchCV} avec \textbf{cv=5} et scoring \code{roc\_auc}~:
+
+\begin{itemize}
+  \item Random Forest~: \code{n\_estimators} $\in \{100, 200\}$,
+        \code{max\_depth} $\in \{\text{None}, 10, 20\}$
+  \item Gradient Boosting~: \code{n\_estimators} $\in \{100, 200\}$,
+        \code{learning\_rate} $\in \{0.05, 0.1\}$
+  \item Régression Logistique~: \code{C} $\in \{0.01, 0.1, 1, 10\}$
+\end{itemize}
+
+\subsection{Résultats comparatifs}
+
+\begin{table}[H]
+\centering
+\caption{Comparaison des performances des modèles sur le jeu de test (20\,\%)}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{l c c c c c}
+\toprule
+\rowcolor{primary!90}
+\color{white}\textbf{Modèle} &
+\color{white}\textbf{Accuracy} &
+\color{white}\textbf{Precision} &
+\color{white}\textbf{Recall} &
+\color{white}\textbf{F1-Score} &
+\color{white}\textbf{AUC-ROC} \\
+\midrule
+Régression Logistique & 0.9943 & 0.99 & 0.99 & 0.99 & 0.9984 \\
+\rowcolor{lightgray}
+\textbf{Random Forest} & \textbf{1.0000} & \textbf{1.00} & \textbf{1.00} & \textbf{1.00} & \textbf{1.0000} \\
+Gradient Boosting     & 1.0000 & 1.00 & 1.00 & 1.00 & 1.0000 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Le \textbf{Random Forest} (200 arbres, profondeur illimitée) a été sélectionné
+comme modèle final.
+
+\subsection{Visualisations des performances}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{confusion_matrix_Random_Forest.png}
+    \caption{Matrice de confusion — Random Forest}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{feature_importance_Random_Forest.png}
+    \caption{Top 20 features les plus importantes}
+  \end{subfigure}
+  \caption{Évaluation du modèle Random Forest sur le jeu de test}
+\end{figure}
+
+%% ============================================================
+\section{Déploiement~: Interface avec Flask}
+%% ============================================================
+
+\subsection{Architecture de l'application}
+
+L'application web a été développée avec le micro-framework \textbf{Flask}.
+Elle expose deux routes principales~:
+
+\begin{itemize}
+  \item \code{GET /}~: page d'accueil avec upload CSV
+  \item \code{POST /predict}~: traitement et affichage des prédictions
+\end{itemize}
+
+Le pipeline d'inférence charge les artefacts sauvegardés
+(\code{preprocessor.pkl} et \code{churn\_model.pkl}) et applique exactement
+la même transformation que lors de l'entraînement.
+
+\subsection{Page d'accueil — Upload CSV}
+
+La page d'accueil permet d'importer un fichier CSV contenant les données
+clients. Toutes les colonnes du dataset original sont supportées.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{screenshot_index.png}
+  \caption{Interface d'accueil — Import de fichier CSV}
+\end{figure}
+
+\subsection{Tableau de bord analytique — Statistiques en ligne}
+
+Après traitement, la page de résultats affiche~:
+
+\begin{itemize}
+  \item \textbf{KPI Cards}~: nombre de clients analysés, churners détectés,
+        taux de churn prédit, risque moyen
+  \item \textbf{Graphique Donut}~: répartition Fidèles / Churners
+  \item \textbf{Graphique Pie}~: distribution des 4 niveaux de risque
+        (Critique / Élevé / Modéré / Faible)
+  \item \textbf{Histogramme}~: nombre de clients par tranche de probabilité
+        (0--10\,\%, 10--20\,\%, \ldots)
+  \item \textbf{Barres horizontales}~: Top 10 clients les plus à risque
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{screenshot_stats.png}
+  \caption{Tableau de bord — KPI et graphiques interactifs (Chart.js)}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{screenshot_charts1.png}
+    \caption{Donut et distribution des risques}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{screenshot_charts2.png}
+    \caption{Histogramme et Top 10 clients}
+  \end{subfigure}
+  \caption{Graphiques statistiques générés automatiquement}
+\end{figure}
+
+\subsection{Tableau détaillé des prédictions}
+
+Chaque client est affiché avec sa prédiction, sa probabilité de départ
+(barre de progression colorée) et son niveau de risque interprété.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{screenshot_table.png}
+  \caption{Tableau des prédictions — Trié par risque décroissant}
+\end{figure}
+
+%% ============================================================
+\section{Conclusion et Recommandations}
+%% ============================================================
+
+\subsection{Bilan technique}
+
+Ce projet a couvert l'intégralité du cycle d'un projet de Data Science~:
+
+\begin{infobox}[Résumé de la chaîne de traitement]
+\begin{itemize}
+  \item \textbf{Données}~: 4\,372 clients $\times$ 52 features brutes
+        $\rightarrow$ 115 features après preprocessing
+  \item \textbf{Nettoyage}~: correction de 479 valeurs aberrantes,
+        5 colonnes supprimées (fuite/inutiles)
+  \item \textbf{Encodage}~: OrdinalEncoder (5 variables) +
+        OneHotEncoder (nominales)
+  \item \textbf{Équilibrage}~: SMOTE (1\,163 $\rightarrow$ 2\,334 churners)
+  \item \textbf{Modèle final}~: Random Forest — AUC-ROC = 1.000
+  \item \textbf{Déploiement}~: API Flask + dashboard interactif Chart.js
+\end{itemize}
+\end{infobox}
+
+\subsection{Recommandations métier}
+
+Les résultats obtenus permettent de proposer les actions suivantes~:
+
+\begin{itemize}
+  \item \textbf{Anticipation du churn}~: identifier en temps réel les clients
+        à risque (probabilité $\geq 75\,\%$) et déclencher des actions de
+        rétention ciblées (réductions, offres personnalisées).
+  \item \textbf{Personnalisation marketing}~: adapter les campagnes selon les
+        features les plus influentes (ancienneté, fréquence, montant moyen).
+  \item \textbf{Optimisation des ressources}~: concentrer les efforts de
+        fidélisation sur les clients à forte valeur monétaire identifiés
+        comme à risque élevé.
+\end{itemize}
+
+\end{document}
+

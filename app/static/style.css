@@ -1,0 +1,169 @@
+/* ── Variables ── */
+:root {
+  --primary:   #2c3e50;
+  --accent:    #3498db;
+  --success:   #27ae60;
+  --warning:   #f39c12;
+  --danger:    #e74c3c;
+  --info:      #2980b9;
+  --bg:        #f4f6f8;
+  --card-bg:   #ffffff;
+  --text:      #2c3e50;
+  --radius:    10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  background: var(--primary);
+  color: #fff;
+  padding: 2rem;
+  text-align: center;
+}
+header h1 { font-size: 1.8rem; margin-bottom: .4rem; }
+header p  { opacity: .75; }
+
+/* ── Main ── */
+main {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  padding: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+.card h2 { margin-bottom: 1rem; font-size: 1.2rem; }
+.card.info { border-left: 4px solid var(--accent); }
+.card.info ul { padding-left: 1.4rem; line-height: 2; }
+
+/* ── Upload zone ── */
+.upload-zone {
+  border: 2px dashed #ccc;
+  border-radius: var(--radius);
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 1.2rem;
+  transition: border-color .2s;
+}
+.upload-zone:hover { border-color: var(--accent); }
+.upload-zone label { cursor: pointer; display: block; }
+.upload-zone .icon { font-size: 2.5rem; display: block; margin-bottom: .5rem; }
+.upload-zone input[type="file"] { display: none; }
+.file-name { display: block; margin-top: .6rem; color: #666; font-size: .9rem; }
+
+/* ── Buttons ── */
+.btn-primary {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: .75rem 2rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .2s;
+}
+.btn-primary:hover { background: #2471a3; }
+
+/* ── Alerts ── */
+.alert {
+  padding: .9rem 1.2rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+.alert-danger  { background: #fdecea; color: var(--danger);  border-left: 4px solid var(--danger);  }
+.alert-success { background: #eafaf1; color: var(--success); border-left: 4px solid var(--success); }
+
+/* ── Stats grid ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  padding: 1.4rem;
+  text-align: center;
+  border-top: 4px solid var(--accent);
+}
+.stat-card.danger  { border-top-color: var(--danger);  }
+.stat-card.warning { border-top-color: var(--warning); }
+.stat-card.info    { border-top-color: var(--info);    }
+.stat-value { display: block; font-size: 2rem; font-weight: 700; }
+.stat-label { display: block; font-size: .85rem; color: #666; margin-top: .3rem; }
+
+/* ── Table ── */
+.table-wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th { background: var(--primary); color: #fff; padding: .75rem 1rem; text-align: left; }
+td { padding: .7rem 1rem; border-bottom: 1px solid #eee; }
+tr:hover td { background: #f9f9f9; }
+
+/* ── Badges ── */
+.badge {
+  display: inline-block;
+  padding: .25rem .7rem;
+  border-radius: 12px;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.badge-success { background: #eafaf1; color: var(--success); }
+.badge-warning { background: #fef9e7; color: var(--warning); }
+.badge-danger  { background: #fdecea; color: var(--danger);  }
+.badge-info    { background: #eaf4fb; color: var(--info);    }
+
+/* ── Progress bar ── */
+.progress-bar-wrap {
+  background: #eee;
+  border-radius: 4px;
+  height: 8px;
+  margin-bottom: 3px;
+  overflow: hidden;
+}
+.progress-bar { height: 100%; border-radius: 4px; }
+.bg-success { background: var(--success); }
+.bg-warning { background: var(--warning); }
+.bg-danger  { background: var(--danger);  }
+
+/* ── Notice ── */
+.notice { font-size: .85rem; color: #888; margin-bottom: .8rem; }
+
+/* ── Charts grid ── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.chart-card { padding: 1.4rem; }
+.chart-card h2 { font-size: 1rem; margin-bottom: 1rem; color: var(--primary); }
+.chart-wide { grid-column: 1 / -1; }
+.chart-wrap { position: relative; height: 280px; }
+
+/* ── Probability label ── */
+.prob-label { font-size: .85rem; font-weight: 600; }
+
+@media (max-width: 640px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .chart-wide  { grid-column: auto; }
+}

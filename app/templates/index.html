@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prédiction Churn — Retail ML</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>Analyse Comportementale Clientèle Retail</h1>
+    <p>Prédiction du Churn par Machine Learning</p>
+  </header>
+
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <section class="card">
+      <h2>Prédire le Churn</h2>
+      <p>Importez un fichier CSV contenant les données clients pour obtenir les prédictions de départ.</p>
+
+      <form action="/predict" method="POST" enctype="multipart/form-data">
+        <div class="upload-zone">
+          <label for="file">
+            <span class="icon">📂</span>
+            <span>Sélectionner un fichier CSV</span>
+          </label>
+          <input type="file" id="file" name="file" accept=".csv" required>
+          <span id="file-name" class="file-name">Aucun fichier sélectionné</span>
+        </div>
+        <button type="submit" class="btn-primary">Lancer la prédiction</button>
+      </form>
+    </section>
+
+    <section class="card info">
+      <h2>À propos</h2>
+      <ul>
+        <li>Modèle entraîné sur <strong>52 features</strong> comportementales</li>
+        <li>Pipeline complet : nettoyage → encodage → normalisation → classification</li>
+        <li>Rééquilibrage SMOTE pour les classes déséquilibrées</li>
+        <li>Optimisation des hyperparamètres via GridSearchCV</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById('file').addEventListener('change', function () {
+      document.getElementById('file-name').textContent =
+        this.files[0] ? this.files[0].name : 'Aucun fichier sélectionné';
+    });
+  </script>
+</body>
+</html>

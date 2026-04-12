@@ -1,0 +1,4 @@
+Modèle,Accuracy,ROC-AUC Test,ROC-AUC CV
+Random Forest,1.0,1.0,1.0
+Gradient Boosting,1.0,1.0,1.0
+Logistic Regression,0.9943,0.9984,0.9999
