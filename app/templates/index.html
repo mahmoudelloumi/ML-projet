@@ -44,36 +44,95 @@
       {% endfor %}
     {% endwith %}
 
-    <!-- Upload Card -->
+    <!-- Analyze Card -->
     <div class="card">
       <div class="card-header">
-        <div class="card-icon cyan">📂</div>
+        <div class="card-icon cyan">📊</div>
         <div>
-          <h2>Importer les données clients</h2>
-          <div class="subtitle">Fichier CSV — colonnes du dataset retail</div>
+          <h2>Données clients chargées</h2>
+          <div class="subtitle">retail_customers_COMPLETE_CATEGORICAL.csv · data/raw/</div>
         </div>
       </div>
-
-      <form action="/predict" method="POST" enctype="multipart/form-data" id="uploadForm">
-        <div class="upload-zone" id="uploadZone">
-          <label for="file">
-            <span class="upload-icon">📊</span>
-            <h3>Glisser-déposer ou cliquer pour sélectionner</h3>
-            <p>Format accepté : .csv · Taille max : 50 MB</p>
-          </label>
-          <input type="file" id="file" name="file" accept=".csv" required>
-        </div>
-
-        <div class="file-info" id="fileInfo">
-          <span class="file-icon">📄</span>
-          <span class="file-name" id="fileName">—</span>
-          <span class="file-size" id="fileSize">—</span>
-        </div>
-
+      <form action="/analyze" method="POST" id="uploadForm">
         <button type="submit" class="btn-primary">
           <span>▶</span> Lancer l'analyse prédictive
         </button>
       </form>
+    </div>
+
+    <!-- Single Client Prediction Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#f39c12,#e74c3c)">🎯</div>
+        <div>
+          <h2>Prédiction Client Unique</h2>
+          <div class="subtitle">Saisir les caractéristiques d'un client et obtenir sa prédiction</div>
+        </div>
+      </div>
+
+      <div class="form-result-layout">
+        <!-- Formulaire à gauche -->
+        <form id="singleClientForm" class="form-side">
+          <div class="form-grid-small">
+            <div class="form-group">
+              <label>Récence (jours depuis dernier achat)</label>
+              <input type="number" name="Recency" placeholder="ex : 120" min="0" required>
+            </div>
+            <div class="form-group">
+              <label>Fréquence (nb transactions)</label>
+              <input type="number" name="Frequency" placeholder="ex : 25" min="1" required>
+            </div>
+            <div class="form-group">
+              <label>Montant total dépensé (€)</label>
+              <input type="number" name="MonetaryTotal" placeholder="ex : 1500" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+              <label>Ancienneté (jours)</label>
+              <input type="number" name="CustomerTenureDays" placeholder="ex : 365" min="0" required>
+            </div>
+            <div class="form-group">
+              <label>Tickets support</label>
+              <input type="number" name="SupportTicketsCount" placeholder="ex : 2" min="0" value="1">
+            </div>
+            <div class="form-group">
+              <label>Score satisfaction (1–5)</label>
+              <input type="number" name="SatisfactionScore" placeholder="ex : 4" min="1" max="5" step="0.1" value="3">
+            </div>
+            <div class="form-group">
+              <label>Niveau de fidélité</label>
+              <select name="LoyaltyLevel">
+                <option value="Nouveau">Nouveau</option>
+                <option value="Jeune">Jeune</option>
+                <option value="Établi" selected>Établi</option>
+                <option value="Ancien">Ancien</option>
+                <option value="Inconnu">Inconnu</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Catégorie de dépense</label>
+              <select name="SpendingCategory">
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+                <option value="VIP">VIP</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="predictBtn">
+            <span>🎯</span> Analyser ce client
+          </button>
+        </form>
+
+        <!-- Résultat à droite -->
+        <div class="result-side">
+          <div id="singleResult" class="single-result" style="display:none"></div>
+          <div class="result-placeholder">
+            <div class="placeholder-icon">🎯</div>
+            <p>Le résultat apparaîtra ici</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Info Card -->
@@ -104,43 +163,51 @@
   </footer>
 
   <script>
-    const fileInput  = document.getElementById('file');
-    const uploadZone = document.getElementById('uploadZone');
-    const fileInfo   = document.getElementById('fileInfo');
-    const fileName   = document.getElementById('fileName');
-    const fileSize   = document.getElementById('fileSize');
-    const form       = document.getElementById('uploadForm');
-    const spinner    = document.getElementById('spinner');
+    const spinner = document.getElementById('spinner');
+    document.getElementById('uploadForm').addEventListener('submit', () => spinner.classList.add('active'));
 
-    function formatSize(bytes) {
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
-      return (bytes/1048576).toFixed(1) + ' MB';
-    }
-
-    fileInput.addEventListener('change', function () {
-      if (this.files[0]) {
-        const f = this.files[0];
-        fileName.textContent = f.name;
-        fileSize.textContent = formatSize(f.size);
-        fileInfo.classList.add('visible');
-        uploadZone.classList.add('has-file');
-      }
-    });
-
-    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
-    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-    uploadZone.addEventListener('drop', e => {
+    // ── Single client form ──
+    document.getElementById('singleClientForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      uploadZone.classList.remove('dragover');
-      const dt = e.dataTransfer;
-      if (dt.files.length) {
-        fileInput.files = dt.files;
-        fileInput.dispatchEvent(new Event('change'));
-      }
-    });
+      const btn = document.getElementById('predictBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Analyse…';
 
-    form.addEventListener('submit', () => spinner.classList.add('active'));
+      const formData = new FormData(this);
+      const resultBox   = document.getElementById('singleResult');
+      const placeholder = document.querySelector('.result-placeholder');
+
+      try {
+        const resp = await fetch('/predict_client', { method: 'POST', body: formData });
+        const data = await resp.json();
+
+        if (data.error) {
+          resultBox.innerHTML = `<div class="result-error">⚠ ${data.error}</div>`;
+        } else {
+          const isChurn = data.prediction === 'Churner';
+          const icon    = isChurn ? '🚨' : '✅';
+          const label   = isChurn ? 'CLIENT À RISQUE' : 'CLIENT FIDÈLE';
+          const cls     = isChurn ? 'result-churn' : 'result-loyal';
+          resultBox.innerHTML = `
+            <div class="result-badge ${cls}">
+              <span class="result-icon">${icon}</span>
+              <span class="result-label">${label}</span>
+            </div>
+            <div class="result-prob"><strong>${data.probability}%</strong>probabilité de churn</div>
+            <div class="result-bar-wrap"><div class="result-bar result-bar-${data.risk}" style="width:${data.probability}%"></div></div>
+          `;
+        }
+        placeholder.style.display = 'none';
+        resultBox.style.display = 'block';
+      } catch(err) {
+        resultBox.innerHTML = `<div class="result-error">⚠ Erreur réseau : ${err}</div>`;
+        placeholder.style.display = 'none';
+        resultBox.style.display = 'block';
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<span>🎯</span> Analyser ce client';
+    });
   </script>
 </body>
 </html>
