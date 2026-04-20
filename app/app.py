@@ -142,7 +142,7 @@ def predict():
         "top10_probs":  [r["probability"] for r in top10],
     }
 
-    return render_template("result.html", rows=rows[:100], stats=stats,
+    return render_template("result.html", rows=rows, stats=stats,
                            charts=charts, filename=file.filename)
 
 

@@ -3,55 +3,144 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Prédiction Churn — Retail ML</title>
+  <title>Retail ML — Prédiction Churn</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <header>
-    <h1>Analyse Comportementale Clientèle Retail</h1>
-    <p>Prédiction du Churn par Machine Learning</p>
-  </header>
 
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <a class="navbar-brand" href="/">
+      <div class="navbar-logo">🤖</div>
+      <div>
+        <div class="navbar-title">Retail ML</div>
+        <div class="navbar-sub">Analyse Comportementale</div>
+      </div>
+    </a>
+    <span class="navbar-badge">⬡ Random Forest · AUC 1.00</span>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow">⬡ Machine Learning · E-commerce Retail</div>
+      <h1>Prédiction du <span class="glow-text">Churn Client</span></h1>
+      <p>Importez vos données clients et obtenez instantanément les prédictions de départ avec un dashboard analytique complet.</p>
+    </div>
+  </section>
+
+  <!-- ── Spinner ── -->
+  <div class="spinner-overlay" id="spinner">
+    <div class="spinner"></div>
+    <div class="spinner-text">Analyse en cours…</div>
+  </div>
+
+  <!-- ── Main ── -->
   <main>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">{{ message }}</div>
+        <div class="alert alert-{{ category }}">⚠ {{ message }}</div>
       {% endfor %}
     {% endwith %}
 
-    <section class="card">
-      <h2>Prédire le Churn</h2>
-      <p>Importez un fichier CSV contenant les données clients pour obtenir les prédictions de départ.</p>
+    <!-- Upload Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon cyan">📂</div>
+        <div>
+          <h2>Importer les données clients</h2>
+          <div class="subtitle">Fichier CSV — colonnes du dataset retail</div>
+        </div>
+      </div>
 
-      <form action="/predict" method="POST" enctype="multipart/form-data">
-        <div class="upload-zone">
+      <form action="/predict" method="POST" enctype="multipart/form-data" id="uploadForm">
+        <div class="upload-zone" id="uploadZone">
           <label for="file">
-            <span class="icon">📂</span>
-            <span>Sélectionner un fichier CSV</span>
+            <span class="upload-icon">📊</span>
+            <h3>Glisser-déposer ou cliquer pour sélectionner</h3>
+            <p>Format accepté : .csv · Taille max : 50 MB</p>
           </label>
           <input type="file" id="file" name="file" accept=".csv" required>
-          <span id="file-name" class="file-name">Aucun fichier sélectionné</span>
         </div>
-        <button type="submit" class="btn-primary">Lancer la prédiction</button>
-      </form>
-    </section>
 
-    <section class="card info">
-      <h2>À propos</h2>
-      <ul>
-        <li>Modèle entraîné sur <strong>52 features</strong> comportementales</li>
-        <li>Pipeline complet : nettoyage → encodage → normalisation → classification</li>
-        <li>Rééquilibrage SMOTE pour les classes déséquilibrées</li>
-        <li>Optimisation des hyperparamètres via GridSearchCV</li>
+        <div class="file-info" id="fileInfo">
+          <span class="file-icon">📄</span>
+          <span class="file-name" id="fileName">—</span>
+          <span class="file-size" id="fileSize">—</span>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <span>▶</span> Lancer l'analyse prédictive
+        </button>
+      </form>
+    </div>
+
+    <!-- Info Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon purple">⚙️</div>
+        <div>
+          <h2>Pipeline Machine Learning</h2>
+          <div class="subtitle">Détails techniques du modèle déployé</div>
+        </div>
+      </div>
+      <ul class="feature-list">
+        <li>52 features comportementales et démographiques</li>
+        <li>Nettoyage automatique des valeurs aberrantes</li>
+        <li>Feature engineering (MonetaryPerDay, AvgBasket…)</li>
+        <li>Encodage ordinal + One-Hot selon le type</li>
+        <li>Normalisation StandardScaler</li>
+        <li>Rééquilibrage SMOTE des classes</li>
+        <li>Optimisation GridSearchCV (cv=5, AUC-ROC)</li>
+        <li>Modèle final : Random Forest · AUC = 1.000</li>
       </ul>
-    </section>
+    </div>
+
   </main>
 
+  <footer class="footer">
+    Retail ML Dashboard · <span>Mahmoud Elloumi</span> · ENIS GI2 · 2025-2026
+  </footer>
+
   <script>
-    document.getElementById('file').addEventListener('change', function () {
-      document.getElementById('file-name').textContent =
-        this.files[0] ? this.files[0].name : 'Aucun fichier sélectionné';
+    const fileInput  = document.getElementById('file');
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInfo   = document.getElementById('fileInfo');
+    const fileName   = document.getElementById('fileName');
+    const fileSize   = document.getElementById('fileSize');
+    const form       = document.getElementById('uploadForm');
+    const spinner    = document.getElementById('spinner');
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+      return (bytes/1048576).toFixed(1) + ' MB';
+    }
+
+    fileInput.addEventListener('change', function () {
+      if (this.files[0]) {
+        const f = this.files[0];
+        fileName.textContent = f.name;
+        fileSize.textContent = formatSize(f.size);
+        fileInfo.classList.add('visible');
+        uploadZone.classList.add('has-file');
+      }
     });
+
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const dt = e.dataTransfer;
+      if (dt.files.length) {
+        fileInput.files = dt.files;
+        fileInput.dispatchEvent(new Event('change'));
+      }
+    });
+
+    form.addEventListener('submit', () => spinner.classList.add('active'));
   </script>
 </body>
 </html>
